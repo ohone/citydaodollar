@@ -24,8 +24,8 @@ contract city is IERC3386, IERC165, ERC20, ERC1155Holder {
     IERC1155 CityDao;
     uint256 citizens_;
 
-    constructor() ERC20(name_, symbol_) {
-        CityDao = IERC1155(cityDaoNftAddress);
+    constructor(address nftContractAddress) ERC20(name_, symbol_) {
+        CityDao = IERC1155(nftContractAddress);
     }
 
     function totalSupply() public view override returns (uint256) {
