@@ -13,7 +13,7 @@ import "hardhat/console.sol";
 
 contract city is IERC3386, IERC165, ERC20, ERC1155Holder {
     using SafeMath for uint256;
-    uint256 citizenNftId = 0;
+    uint256 citizenNftId = 42;
 
     string constant name_ = "CityDaoCitizenERC20";
 
@@ -29,7 +29,7 @@ contract city is IERC3386, IERC165, ERC20, ERC1155Holder {
     }
 
     function totalSupply() public view override returns (uint256) {
-        return citizens_ * 100;
+        return citizens_ * 1000;
     }
 
     function onERC1155Received(
@@ -75,12 +75,18 @@ contract city is IERC3386, IERC165, ERC20, ERC1155Holder {
      */
     function mint(
         address _to,
-        uint256 _id,
+        uint256,
         uint256 _amount
     ) external override(IERC3386) {
-        CityDao.safeTransferFrom(msg.sender, address(this), _id, _amount, "");
+        CityDao.safeTransferFrom(
+            msg.sender,
+            address(this),
+            citizenNftId,
+            _amount,
+            ""
+        );
         _mint(_to, _amount * 1000);
-        emit MintSingle(msg.sender, _to, _id, _amount, 0);
+        emit MintSingle(msg.sender, _to, citizenNftId, _amount, 0);
     }
 
     /**
@@ -103,7 +109,7 @@ contract city is IERC3386, IERC165, ERC20, ERC1155Holder {
         uint256 _amount // number of nfts to withdraw from contract
     ) external override(IERC3386) {
         uint256 burnAmount = 1000 * _amount;
-        require(balanceOf(_from) >= burnAmount);
+        require(balanceOf(_from) == burnAmount);
 
         // remove from circulation
         CityDao.safeTransferFrom(address(this), _to, citizenNftId, _amount, "");
