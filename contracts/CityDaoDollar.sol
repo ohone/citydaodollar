@@ -4,8 +4,9 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
 import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@rari-capital/solmate/src/tokens/ERC20.sol";
 import "@openzeppelin/contracts/interfaces/IERC165.sol";
+import "@openzeppelin/contracts/interfaces/IERC20.sol";
 import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "./interfaces/IERC3386.sol";
@@ -16,18 +17,13 @@ contract city is IERC3386, IERC165, ERC20, ERC1155Holder {
     uint256 citizenNftId = 42;
 
     string constant name_ = "CityDaoCitizenERC20";
-
     string constant symbol_ = "CITIZEN";
 
     address public cityDaoNftAddress;
     uint256 citizens_;
 
-    constructor(address nftContractAddress) ERC20(name_, symbol_) {
+    constructor(address nftContractAddress) ERC20(name_, symbol_, 18) {
         cityDaoNftAddress = nftContractAddress;
-    }
-
-    function totalSupply() public view override returns (uint256) {
-        return citizens_ * 1000;
     }
 
     function onERC1155Received(
@@ -107,7 +103,7 @@ contract city is IERC3386, IERC165, ERC20, ERC1155Holder {
         uint256 _amount // number of nfts to withdraw from contract
     ) external override(IERC3386) {
         uint256 burnAmount = 1000 * _amount;
-        require(balanceOf(_from) == burnAmount);
+        require(balanceOf[_from] == burnAmount);
 
         // remove from circulation
         IERC1155(cityDaoNftAddress).safeTransferFrom(

@@ -19,6 +19,8 @@ import { TypedEventFilter, TypedEvent, TypedListener, OnEvent } from "./common";
 
 export interface CityInterface extends utils.Interface {
   functions: {
+    "DOMAIN_SEPARATOR()": FunctionFragment;
+    "PERMIT_TYPEHASH()": FunctionFragment;
     "allowance(address,address)": FunctionFragment;
     "approve(address,uint256)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
@@ -28,13 +30,13 @@ export interface CityInterface extends utils.Interface {
     "burn(address,address,uint256)": FunctionFragment;
     "cityDaoNftAddress()": FunctionFragment;
     "decimals()": FunctionFragment;
-    "decreaseAllowance(address,uint256)": FunctionFragment;
     "idBurn(address,address,uint256,uint256)": FunctionFragment;
-    "increaseAllowance(address,uint256)": FunctionFragment;
     "mint(address,uint256,uint256)": FunctionFragment;
     "name()": FunctionFragment;
+    "nonces(address)": FunctionFragment;
     "onERC1155BatchReceived(address,address,uint256[],uint256[],bytes)": FunctionFragment;
     "onERC1155Received(address,address,uint256,uint256,bytes)": FunctionFragment;
+    "permit(address,address,uint256,uint256,uint8,bytes32,bytes32)": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
     "symbol()": FunctionFragment;
     "totalSupply()": FunctionFragment;
@@ -42,6 +44,14 @@ export interface CityInterface extends utils.Interface {
     "transferFrom(address,address,uint256)": FunctionFragment;
   };
 
+  encodeFunctionData(
+    functionFragment: "DOMAIN_SEPARATOR",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "PERMIT_TYPEHASH",
+    values?: undefined
+  ): string;
   encodeFunctionData(
     functionFragment: "allowance",
     values: [string, string]
@@ -73,22 +83,15 @@ export interface CityInterface extends utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "decimals", values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "decreaseAllowance",
-    values: [string, BigNumberish]
-  ): string;
-  encodeFunctionData(
     functionFragment: "idBurn",
     values: [string, string, BigNumberish, BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "increaseAllowance",
-    values: [string, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "mint",
     values: [string, BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "name", values?: undefined): string;
+  encodeFunctionData(functionFragment: "nonces", values: [string]): string;
   encodeFunctionData(
     functionFragment: "onERC1155BatchReceived",
     values: [string, string, BigNumberish[], BigNumberish[], BytesLike]
@@ -96,6 +99,18 @@ export interface CityInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "onERC1155Received",
     values: [string, string, BigNumberish, BigNumberish, BytesLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "permit",
+    values: [
+      string,
+      string,
+      BigNumberish,
+      BigNumberish,
+      BigNumberish,
+      BytesLike,
+      BytesLike
+    ]
   ): string;
   encodeFunctionData(
     functionFragment: "supportsInterface",
@@ -115,6 +130,14 @@ export interface CityInterface extends utils.Interface {
     values: [string, string, BigNumberish]
   ): string;
 
+  decodeFunctionResult(
+    functionFragment: "DOMAIN_SEPARATOR",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "PERMIT_TYPEHASH",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "allowance", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
@@ -130,17 +153,10 @@ export interface CityInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "decimals", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "decreaseAllowance",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "idBurn", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "increaseAllowance",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "name", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "nonces", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "onERC1155BatchReceived",
     data: BytesLike
@@ -149,6 +165,7 @@ export interface CityInterface extends utils.Interface {
     functionFragment: "onERC1155Received",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "permit", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "supportsInterface",
     data: BytesLike
@@ -183,7 +200,7 @@ export interface CityInterface extends utils.Interface {
 
 export type ApprovalEvent = TypedEvent<
   [string, string, BigNumber],
-  { owner: string; spender: string; value: BigNumber }
+  { owner: string; spender: string; amount: BigNumber }
 >;
 
 export type ApprovalEventFilter = TypedEventFilter<ApprovalEvent>;
@@ -242,7 +259,7 @@ export type MintSingleEventFilter = TypedEventFilter<MintSingleEvent>;
 
 export type TransferEvent = TypedEvent<
   [string, string, BigNumber],
-  { from: string; to: string; value: BigNumber }
+  { from: string; to: string; amount: BigNumber }
 >;
 
 export type TransferEventFilter = TypedEventFilter<TransferEvent>;
@@ -274,9 +291,13 @@ export interface City extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
+    DOMAIN_SEPARATOR(overrides?: CallOverrides): Promise<[string]>;
+
+    PERMIT_TYPEHASH(overrides?: CallOverrides): Promise<[string]>;
+
     allowance(
-      owner: string,
-      spender: string,
+      arg0: string,
+      arg1: string,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
@@ -286,7 +307,7 @@ export interface City extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    balanceOf(account: string, overrides?: CallOverrides): Promise<[BigNumber]>;
+    balanceOf(arg0: string, overrides?: CallOverrides): Promise<[BigNumber]>;
 
     batchBurn(
       arg0: string,
@@ -321,12 +342,6 @@ export interface City extends BaseContract {
 
     decimals(overrides?: CallOverrides): Promise<[number]>;
 
-    decreaseAllowance(
-      spender: string,
-      subtractedValue: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
     idBurn(
       arg0: string,
       arg1: string,
@@ -334,12 +349,6 @@ export interface City extends BaseContract {
       arg3: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[void]>;
-
-    increaseAllowance(
-      spender: string,
-      addedValue: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
 
     mint(
       _to: string,
@@ -349,6 +358,8 @@ export interface City extends BaseContract {
     ): Promise<ContractTransaction>;
 
     name(overrides?: CallOverrides): Promise<[string]>;
+
+    nonces(arg0: string, overrides?: CallOverrides): Promise<[BigNumber]>;
 
     onERC1155BatchReceived(
       arg0: string,
@@ -368,6 +379,17 @@ export interface City extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    permit(
+      owner: string,
+      spender: string,
+      value: BigNumberish,
+      deadline: BigNumberish,
+      v: BigNumberish,
+      r: BytesLike,
+      s: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     supportsInterface(
       interfaceId: BytesLike,
       overrides?: CallOverrides
@@ -378,22 +400,26 @@ export interface City extends BaseContract {
     totalSupply(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     transfer(
-      recipient: string,
+      to: string,
       amount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
     transferFrom(
-      sender: string,
-      recipient: string,
+      from: string,
+      to: string,
       amount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
   };
 
+  DOMAIN_SEPARATOR(overrides?: CallOverrides): Promise<string>;
+
+  PERMIT_TYPEHASH(overrides?: CallOverrides): Promise<string>;
+
   allowance(
-    owner: string,
-    spender: string,
+    arg0: string,
+    arg1: string,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
@@ -403,7 +429,7 @@ export interface City extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  balanceOf(account: string, overrides?: CallOverrides): Promise<BigNumber>;
+  balanceOf(arg0: string, overrides?: CallOverrides): Promise<BigNumber>;
 
   batchBurn(
     arg0: string,
@@ -438,12 +464,6 @@ export interface City extends BaseContract {
 
   decimals(overrides?: CallOverrides): Promise<number>;
 
-  decreaseAllowance(
-    spender: string,
-    subtractedValue: BigNumberish,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
   idBurn(
     arg0: string,
     arg1: string,
@@ -451,12 +471,6 @@ export interface City extends BaseContract {
     arg3: BigNumberish,
     overrides?: CallOverrides
   ): Promise<void>;
-
-  increaseAllowance(
-    spender: string,
-    addedValue: BigNumberish,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
 
   mint(
     _to: string,
@@ -466,6 +480,8 @@ export interface City extends BaseContract {
   ): Promise<ContractTransaction>;
 
   name(overrides?: CallOverrides): Promise<string>;
+
+  nonces(arg0: string, overrides?: CallOverrides): Promise<BigNumber>;
 
   onERC1155BatchReceived(
     arg0: string,
@@ -485,6 +501,17 @@ export interface City extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  permit(
+    owner: string,
+    spender: string,
+    value: BigNumberish,
+    deadline: BigNumberish,
+    v: BigNumberish,
+    r: BytesLike,
+    s: BytesLike,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   supportsInterface(
     interfaceId: BytesLike,
     overrides?: CallOverrides
@@ -495,22 +522,26 @@ export interface City extends BaseContract {
   totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
   transfer(
-    recipient: string,
+    to: string,
     amount: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
   transferFrom(
-    sender: string,
-    recipient: string,
+    from: string,
+    to: string,
     amount: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
   callStatic: {
+    DOMAIN_SEPARATOR(overrides?: CallOverrides): Promise<string>;
+
+    PERMIT_TYPEHASH(overrides?: CallOverrides): Promise<string>;
+
     allowance(
-      owner: string,
-      spender: string,
+      arg0: string,
+      arg1: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -520,7 +551,7 @@ export interface City extends BaseContract {
       overrides?: CallOverrides
     ): Promise<boolean>;
 
-    balanceOf(account: string, overrides?: CallOverrides): Promise<BigNumber>;
+    balanceOf(arg0: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     batchBurn(
       arg0: string,
@@ -555,12 +586,6 @@ export interface City extends BaseContract {
 
     decimals(overrides?: CallOverrides): Promise<number>;
 
-    decreaseAllowance(
-      spender: string,
-      subtractedValue: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<boolean>;
-
     idBurn(
       arg0: string,
       arg1: string,
@@ -568,12 +593,6 @@ export interface City extends BaseContract {
       arg3: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
-
-    increaseAllowance(
-      spender: string,
-      addedValue: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<boolean>;
 
     mint(
       _to: string,
@@ -583,6 +602,8 @@ export interface City extends BaseContract {
     ): Promise<void>;
 
     name(overrides?: CallOverrides): Promise<string>;
+
+    nonces(arg0: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     onERC1155BatchReceived(
       arg0: string,
@@ -602,6 +623,17 @@ export interface City extends BaseContract {
       overrides?: CallOverrides
     ): Promise<string>;
 
+    permit(
+      owner: string,
+      spender: string,
+      value: BigNumberish,
+      deadline: BigNumberish,
+      v: BigNumberish,
+      r: BytesLike,
+      s: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     supportsInterface(
       interfaceId: BytesLike,
       overrides?: CallOverrides
@@ -612,14 +644,14 @@ export interface City extends BaseContract {
     totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
     transfer(
-      recipient: string,
+      to: string,
       amount: BigNumberish,
       overrides?: CallOverrides
     ): Promise<boolean>;
 
     transferFrom(
-      sender: string,
-      recipient: string,
+      from: string,
+      to: string,
       amount: BigNumberish,
       overrides?: CallOverrides
     ): Promise<boolean>;
@@ -629,12 +661,12 @@ export interface City extends BaseContract {
     "Approval(address,address,uint256)"(
       owner?: string | null,
       spender?: string | null,
-      value?: null
+      amount?: null
     ): ApprovalEventFilter;
     Approval(
       owner?: string | null,
       spender?: string | null,
-      value?: null
+      amount?: null
     ): ApprovalEventFilter;
 
     "BurnBatch(address,address,uint256[],uint256[],uint256)"(
@@ -700,19 +732,23 @@ export interface City extends BaseContract {
     "Transfer(address,address,uint256)"(
       from?: string | null,
       to?: string | null,
-      value?: null
+      amount?: null
     ): TransferEventFilter;
     Transfer(
       from?: string | null,
       to?: string | null,
-      value?: null
+      amount?: null
     ): TransferEventFilter;
   };
 
   estimateGas: {
+    DOMAIN_SEPARATOR(overrides?: CallOverrides): Promise<BigNumber>;
+
+    PERMIT_TYPEHASH(overrides?: CallOverrides): Promise<BigNumber>;
+
     allowance(
-      owner: string,
-      spender: string,
+      arg0: string,
+      arg1: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -722,7 +758,7 @@ export interface City extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    balanceOf(account: string, overrides?: CallOverrides): Promise<BigNumber>;
+    balanceOf(arg0: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     batchBurn(
       arg0: string,
@@ -757,24 +793,12 @@ export interface City extends BaseContract {
 
     decimals(overrides?: CallOverrides): Promise<BigNumber>;
 
-    decreaseAllowance(
-      spender: string,
-      subtractedValue: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
     idBurn(
       arg0: string,
       arg1: string,
       arg2: BigNumberish,
       arg3: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    increaseAllowance(
-      spender: string,
-      addedValue: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
     mint(
@@ -785,6 +809,8 @@ export interface City extends BaseContract {
     ): Promise<BigNumber>;
 
     name(overrides?: CallOverrides): Promise<BigNumber>;
+
+    nonces(arg0: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     onERC1155BatchReceived(
       arg0: string,
@@ -804,6 +830,17 @@ export interface City extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    permit(
+      owner: string,
+      spender: string,
+      value: BigNumberish,
+      deadline: BigNumberish,
+      v: BigNumberish,
+      r: BytesLike,
+      s: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     supportsInterface(
       interfaceId: BytesLike,
       overrides?: CallOverrides
@@ -814,23 +851,27 @@ export interface City extends BaseContract {
     totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
     transfer(
-      recipient: string,
+      to: string,
       amount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
     transferFrom(
-      sender: string,
-      recipient: string,
+      from: string,
+      to: string,
       amount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
   };
 
   populateTransaction: {
+    DOMAIN_SEPARATOR(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    PERMIT_TYPEHASH(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     allowance(
-      owner: string,
-      spender: string,
+      arg0: string,
+      arg1: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -841,7 +882,7 @@ export interface City extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     balanceOf(
-      account: string,
+      arg0: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -878,24 +919,12 @@ export interface City extends BaseContract {
 
     decimals(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    decreaseAllowance(
-      spender: string,
-      subtractedValue: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
     idBurn(
       arg0: string,
       arg1: string,
       arg2: BigNumberish,
       arg3: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    increaseAllowance(
-      spender: string,
-      addedValue: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     mint(
@@ -906,6 +935,11 @@ export interface City extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     name(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    nonces(
+      arg0: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
 
     onERC1155BatchReceived(
       arg0: string,
@@ -925,6 +959,17 @@ export interface City extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
+    permit(
+      owner: string,
+      spender: string,
+      value: BigNumberish,
+      deadline: BigNumberish,
+      v: BigNumberish,
+      r: BytesLike,
+      s: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
     supportsInterface(
       interfaceId: BytesLike,
       overrides?: CallOverrides
@@ -935,14 +980,14 @@ export interface City extends BaseContract {
     totalSupply(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     transfer(
-      recipient: string,
+      to: string,
       amount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     transferFrom(
-      sender: string,
-      recipient: string,
+      from: string,
+      to: string,
       amount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
