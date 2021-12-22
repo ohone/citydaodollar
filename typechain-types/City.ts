@@ -343,7 +343,7 @@ export interface City extends BaseContract {
 
     mint(
       _to: string,
-      _id: BigNumberish,
+      arg1: BigNumberish,
       _amount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
@@ -460,7 +460,7 @@ export interface City extends BaseContract {
 
   mint(
     _to: string,
-    _id: BigNumberish,
+    arg1: BigNumberish,
     _amount: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
@@ -577,7 +577,7 @@ export interface City extends BaseContract {
 
     mint(
       _to: string,
-      _id: BigNumberish,
+      arg1: BigNumberish,
       _amount: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
@@ -779,7 +779,7 @@ export interface City extends BaseContract {
 
     mint(
       _to: string,
-      _id: BigNumberish,
+      arg1: BigNumberish,
       _amount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
@@ -900,7 +900,7 @@ export interface City extends BaseContract {
 
     mint(
       _to: string,
-      _id: BigNumberish,
+      arg1: BigNumberish,
       _amount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
