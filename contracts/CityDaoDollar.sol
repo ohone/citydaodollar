@@ -8,20 +8,16 @@ import "@rari-capital/solmate/src/tokens/ERC20.sol";
 import "@openzeppelin/contracts/interfaces/IERC165.sol";
 import "@openzeppelin/contracts/interfaces/IERC20.sol";
 import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "./interfaces/IERC3386.sol";
 
 contract city is IERC3386, IERC165, ERC20, ERC1155Holder {
-    using SafeMath for uint256;
     uint256 citizenNftId = 42;
-
-    string constant name_ = "CityDaoCitizenERC20";
-    string constant symbol_ = "CITIZEN";
-
     address public cityDaoNftAddress;
     uint256 citizens_;
 
-    constructor(address nftContractAddress) ERC20(name_, symbol_, 18) {
+    constructor(address nftContractAddress)
+        ERC20("CityDaoCitizenERC20", "CITIZEN_", 18)
+    {
         cityDaoNftAddress = nftContractAddress;
     }
 
