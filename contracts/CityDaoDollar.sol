@@ -10,7 +10,6 @@ import "@openzeppelin/contracts/interfaces/IERC20.sol";
 import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "./interfaces/IERC3386.sol";
-import "hardhat/console.sol";
 
 contract city is IERC3386, IERC165, ERC20, ERC1155Holder {
     using SafeMath for uint256;
