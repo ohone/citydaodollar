@@ -19,13 +19,11 @@ contract city is IERC3386, IERC165, ERC20, ERC1155Holder {
 
     string constant symbol_ = "CITIZEN";
 
-    address public constant cityDaoNftAddress =
-        0x7EeF591A6CC0403b9652E98E88476fe1bF31dDeb;
-    IERC1155 CityDao;
+    address public cityDaoNftAddress;
     uint256 citizens_;
 
     constructor(address nftContractAddress) ERC20(name_, symbol_) {
-        CityDao = IERC1155(nftContractAddress);
+        cityDaoNftAddress = nftContractAddress;
     }
 
     function totalSupply() public view override returns (uint256) {
@@ -78,7 +76,7 @@ contract city is IERC3386, IERC165, ERC20, ERC1155Holder {
         uint256,
         uint256 _amount
     ) external override(IERC3386) {
-        CityDao.safeTransferFrom(
+        IERC1155(cityDaoNftAddress).safeTransferFrom(
             msg.sender,
             address(this),
             citizenNftId,
@@ -112,7 +110,13 @@ contract city is IERC3386, IERC165, ERC20, ERC1155Holder {
         require(balanceOf(_from) == burnAmount);
 
         // remove from circulation
-        CityDao.safeTransferFrom(address(this), _to, citizenNftId, _amount, "");
+        IERC1155(cityDaoNftAddress).safeTransferFrom(
+            address(this),
+            _to,
+            citizenNftId,
+            _amount,
+            ""
+        );
         _burn(_from, burnAmount);
 
         citizens_--;
