@@ -1,9 +1,12 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
 import { ethers } from "hardhat";
-import { City } from "../typechain-types/City";
+import { CitizenToken } from "../typechain-types/CitizenToken";
 import { CitizenNFT } from "../typechain-types/CitizenNFT";
 import { BaseContract } from "@ethersproject/contracts";
+
+const TokenArtifactName = "CitizenToken";
+const NftArtifactName = "CitizenNFT";
 
 async function InitializeContract<T extends BaseContract>(
   name: string,
@@ -13,7 +16,7 @@ async function InitializeContract<T extends BaseContract>(
 }
 
 describe("deployment", function () {
-  let cityDaoDollar: City;
+  let cityDaoDollar: CitizenToken;
   let citizenNFT: CitizenNFT;
   let owner: SignerWithAddress;
   let addr1: SignerWithAddress;
@@ -28,7 +31,10 @@ describe("deployment", function () {
       addr1.address,
       1
     );
-    cityDaoDollar = await InitializeContract<City>("city", citizenNFT.address);
+    cityDaoDollar = await InitializeContract<CitizenToken>(
+      TokenArtifactName,
+      citizenNFT.address
+    );
   });
 
   it("Should initialize with no supply", async function () {
@@ -54,7 +60,7 @@ async function TransferCitizenTo(
 }
 
 describe("minting", function () {
-  let cityDaoDollar: City;
+  let cityDaoDollar: CitizenToken;
   let citizenNFT: CitizenNFT;
   let owner: SignerWithAddress;
   let addr1: SignerWithAddress;
@@ -68,7 +74,10 @@ describe("minting", function () {
       addr1.address,
       1
     );
-    cityDaoDollar = await InitializeContract<City>("city", citizenNFT.address);
+    cityDaoDollar = await InitializeContract<CitizenToken>(
+      TokenArtifactName,
+      citizenNFT.address
+    );
     await citizenNFT.initialCitizenship();
     await citizenNFT.reserveCitizenships(1000);
     await TransferCitizenTo(addr2, citizenNFT);
@@ -100,7 +109,7 @@ describe("minting", function () {
 });
 
 describe("burning", function () {
-  let cityDaoDollar: City;
+  let cityDaoDollar: CitizenToken;
   let citizenNFT: CitizenNFT;
   let owner: SignerWithAddress;
   let thirdParty: SignerWithAddress;
@@ -114,7 +123,10 @@ describe("burning", function () {
       thirdParty.address,
       1
     );
-    cityDaoDollar = await InitializeContract<City>("city", citizenNFT.address);
+    cityDaoDollar = await InitializeContract<CitizenToken>(
+      TokenArtifactName,
+      citizenNFT.address
+    );
     await citizenNFT.initialCitizenship();
     await citizenNFT.reserveCitizenships(1000);
 
