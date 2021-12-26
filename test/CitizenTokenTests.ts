@@ -15,6 +15,15 @@ async function InitializeContract<T extends BaseContract>(
   return (await (await ethers.getContractFactory(name)).deploy(...args)) as T;
 }
 
+async function TransferCitizenTo(
+  recipient: SignerWithAddress,
+  nftContract: CitizenNFT
+): Promise<void> {
+  await nftContract.connect(recipient).onlineApplicationForCitizenship(1, {
+    value: ethers.utils.parseEther("0.25"),
+  });
+}
+
 describe("deployment", function () {
   let cityDaoDollar: CitizenToken;
   let citizenNFT: CitizenNFT;
@@ -27,7 +36,7 @@ describe("deployment", function () {
     [owner, addr1, addr2, ...addrs] = await ethers.getSigners();
 
     citizenNFT = await InitializeContract<CitizenNFT>(
-      "CitizenNFT",
+      NftArtifactName,
       addr1.address,
       1
     );
@@ -50,28 +59,19 @@ describe("deployment", function () {
   });
 });
 
-async function TransferCitizenTo(
-  recipient: SignerWithAddress,
-  nftContract: CitizenNFT
-): Promise<void> {
-  await nftContract.connect(recipient).onlineApplicationForCitizenship(1, {
-    value: ethers.utils.parseEther("0.25"),
-  });
-}
-
 describe("minting", function () {
   let cityDaoDollar: CitizenToken;
   let citizenNFT: CitizenNFT;
   let owner: SignerWithAddress;
-  let addr1: SignerWithAddress;
-  let addr2: SignerWithAddress;
+  let thirdParty: SignerWithAddress;
+  let nftOwner: SignerWithAddress;
 
   beforeEach(async () => {
-    [owner, addr1, addr2] = await ethers.getSigners();
+    [owner, thirdParty, nftOwner] = await ethers.getSigners();
 
     citizenNFT = await InitializeContract<CitizenNFT>(
-      "CitizenNFT",
-      addr1.address,
+      NftArtifactName,
+      thirdParty.address,
       1
     );
     cityDaoDollar = await InitializeContract<CitizenToken>(
@@ -80,29 +80,48 @@ describe("minting", function () {
     );
     await citizenNFT.initialCitizenship();
     await citizenNFT.reserveCitizenships(1000);
-    await TransferCitizenTo(addr2, citizenNFT);
+    await TransferCitizenTo(nftOwner, citizenNFT);
     await citizenNFT
-      .connect(addr2)
+      .connect(nftOwner)
       .setApprovalForAll(cityDaoDollar.address, true);
   });
 
+  it("reverts if caller hasnt approved dollar contract for nft transfer", async function () {
+    await expect(cityDaoDollar.mint(owner.address, 0, 1)).to.be.reverted;
+  });
+
+  it("reverts if from doesnt own citizen nft", async function () {
+    await citizenNFT
+      .connect(thirdParty)
+      .setApprovalForAll(cityDaoDollar.address, true);
+
+    await expect(
+      cityDaoDollar.connect(thirdParty).mint(thirdParty.address, 0, 1)
+    ).to.be.reverted;
+  });
+
+  it("reverts if from doesnt own argumented nft count", async function () {
+    await expect(cityDaoDollar.connect(nftOwner).mint(nftOwner.address, 0, 2))
+      .to.be.reverted;
+  });
+
   it("increases address token balance by 1000", async function () {
-    await cityDaoDollar.connect(addr2).mint(addr2.address, 0, 1);
+    await cityDaoDollar.connect(nftOwner).mint(nftOwner.address, 0, 1);
 
     expect(
-      await cityDaoDollar.connect(addr2).balanceOf(addr2.address)
+      await cityDaoDollar.connect(nftOwner).balanceOf(nftOwner.address)
     ).to.equal(1000);
   });
 
   it("transfers ownership of citizen to contract", async function () {
-    await cityDaoDollar.connect(addr2).mint(addr2.address, 42, 1);
+    await cityDaoDollar.connect(nftOwner).mint(nftOwner.address, 42, 1);
 
-    expect(await citizenNFT.balanceOf(addr2.address, 42)).to.equal(0);
+    expect(await citizenNFT.balanceOf(nftOwner.address, 42)).to.equal(0);
     expect(await citizenNFT.balanceOf(cityDaoDollar.address, 42)).to.equal(1);
   });
 
   it("increases supply by 1000", async function () {
-    await cityDaoDollar.connect(addr2).mint(addr2.address, 42, 1);
+    await cityDaoDollar.connect(nftOwner).mint(nftOwner.address, 42, 1);
 
     expect(await cityDaoDollar.totalSupply()).to.equal(1000);
   });
@@ -119,7 +138,7 @@ describe("burning", function () {
     [owner, thirdParty, nftOwner] = await ethers.getSigners();
 
     citizenNFT = await InitializeContract<CitizenNFT>(
-      "CitizenNFT",
+      NftArtifactName,
       thirdParty.address,
       1
     );
