@@ -98,7 +98,7 @@ contract CitizenToken is IERC3386, IERC165, ERC20, ERC1155Holder {
         uint256 _amount // number of nfts to withdraw from contract
     ) external override(IERC3386) {
         uint256 burnAmount = 1000 * _amount;
-        require(balanceOf[_from] == burnAmount);
+        require(balanceOf[_from] >= burnAmount);
 
         // remove from circulation
         IERC1155(cityDaoNftAddress).safeTransferFrom(

@@ -171,6 +171,22 @@ describe("burning", function () {
     expect(postBurnBalance).to.equal(initialBalance.sub(1000));
   });
 
+  it("reverts if from doesnt own any tokens", async function () {
+    await expect(
+      cityDaoDollar
+        .connect(thirdParty)
+        .burn(thirdParty.address, thirdParty.address, 1)
+    ).to.be.reverted;
+  });
+
+  it("reverts if from not enough tokens", async function () {
+    await expect(
+      cityDaoDollar
+        .connect(nftOwner)
+        .burn(nftOwner.address, nftOwner.address, 2)
+    ).to.be.reverted;
+  });
+
   it("decreases supply by 1000", async function () {
     const initialSupply = await cityDaoDollar.totalSupply();
 
