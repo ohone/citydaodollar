@@ -11,8 +11,8 @@ import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import "./interfaces/IERC3386.sol";
 
 contract CitizenToken is IERC3386, IERC165, ERC20, ERC1155Holder {
-    uint256 citizenNftId = 42;
-    address public cityDaoNftAddress;
+    uint256 private constant citizenNftId = 42;
+    address public immutable cityDaoNftAddress;
     uint256 citizens_;
 
     constructor(address nftContractAddress)
